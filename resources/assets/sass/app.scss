@@ -1,0 +1,26 @@
+
+// Fonts
+@import url("https://fonts.googleapis.com/css?family=Raleway:300,400,600");
+
+// Variables
+@import "variables";
+
+// Bootstrap
+@import "node_modules/bootstrap-sass/assets/stylesheets/bootstrap";
+
+.container {
+	width: 100%;
+}
+.table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: #eaeaea;
+}
+
+.form-label, .control-label {
+	color: #424242;
+}
+
+.control-label {
+    display: block;
+    margin-bottom: 0.7em;
+    font-size: 20px;
+}
