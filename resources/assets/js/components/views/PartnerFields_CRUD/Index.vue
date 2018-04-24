@@ -19,6 +19,7 @@
 				<table class="table table-bordered table-striped">
 					<thead>
 						<tr>
+							<th>field ID</th>
 							<th>partner ID</th>
 							<th>field name</th>
 							<th>available values</th>
@@ -31,6 +32,7 @@
 					</thead>
 					<tbody>
 						<tr v-for="entry,index in entry_list.data" :key="index">
+							<td>{{ entry.id }}</td>
 							<td>{{ entry.partner_id }}</td>
 							<td>{{ entry.fieldname }}</td>
 							<td>{{ entry.available_values }}</td>

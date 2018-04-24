@@ -73,7 +73,8 @@
 				*		null == undefined	-> true
 				*		null === null		-> true
 				*/
-				if(selected_field_name_left != undefined && selected_field_name_right != undefined) {
+				// if(selected_field_name_left != undefined && selected_field_name_right != undefined) {
+				if(selected_field_name_right != undefined) {
 					var newPair = {}
 					newPair.partner_id_left = app.leftPartnerId
 					newPair.partner_id_right = app.rightPartnerId
@@ -103,7 +104,7 @@
 						})
 					app.close()
 				} else {
-					alert("Please select two fields correctly.")
+					alert("Please select at least the right partner field.")
 				}
 			},
 		},

@@ -19,8 +19,8 @@
 				<table class="table table-bordered table-striped">
 					<thead>
 						<tr>
-							<th>Left Partner field Name</th>
-							<th>Right Partner field Name</th>
+							<th>Left Partner(<span class="partner-name">{{left_partner}}</span>) field Name</th>
+							<th>Right Partner(<span class="partner-name">{{right_partner}}</span>) field Name</th>
 							<th width="20%">&nbsp;</th>
 						</tr>
 					</thead>
@@ -65,6 +65,8 @@
 		},
 		data() {
 			return {
+				left_partner: null,						// left partner name
+				right_partner: null,					// right partner name
 				entry_list: {},		 					// field pair(entry) list(paginated) of left and right partners
 				entry: {},								// entry (entry: pair of left field and right field)
 				c_left_hid_list: {},					// left side of all field pairs
@@ -85,11 +87,34 @@
 			var queries = app.$route.query
 			app.left_partner_id = parseInt(queries.partner_id_left)
 			app.right_partner_id = parseInt(queries.partner_id_right)
+			app.getPartnerNameById()
 			app.getLRList()
 			app.getAllLRList()
 			app.getTwoPartnerFields()
 		},
 		methods: {
+			/*
+			*	Get left partner name and right partner name
+			*/
+			getPartnerNameById() {
+				var app = this
+				app.axios.get('/api/v1/partners/' + app.left_partner_id)
+				.then(function(resp) {
+					app.left_partner = resp.data.name
+					console.log("left partner name: "+app.left_partner)
+				})
+				.catch(function(resp) {
+					console.log(resp)
+				})
+				app.axios.get('/api/v1/partners/' + app.right_partner_id)
+				.then(function(resp) {
+					app.right_partner = resp.data.name
+					console.log("right partner name: "+app.right_partner)
+				})
+				.catch(function(resp) {
+					console.log(resp)
+				})
+			},
 			/*
 			*	Get left-right field pairs based on pagination
 			*/
@@ -226,3 +251,9 @@
 		}
 	}
 </script>
+<style lang="sass" scoped>
+	.partner-name
+		font-size: 17px
+		font-style: italic
+		color: #a7a7a7
+</style>

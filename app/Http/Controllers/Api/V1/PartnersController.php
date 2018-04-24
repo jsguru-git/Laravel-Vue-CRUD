@@ -52,7 +52,8 @@ class PartnersController extends Controller
      */
     public function show($id)
     {
-        //
+        $partner = Partner::find($id);
+        return $partner;
     }
 
     /**

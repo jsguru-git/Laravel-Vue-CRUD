@@ -1,9 +1,13 @@
 <template>
 	<modal :show="show" @close="close">
 		<div class="modal-header">
-			<h3>New Partner Field name</h3>
+			<h3>Edit Partner Field name</h3>
 		</div>
 		<div class="modal-body">
+			<div class="form-group">
+				<label class="form-label">field ID</label>
+				<input class="form-control" :value="entry.id" disabled>
+			</div>
 			<div class="form-group">
 				<label class="form-label">partner ID</label>
 				<input class="form-control" :value="entry.partner_id" disabled>
