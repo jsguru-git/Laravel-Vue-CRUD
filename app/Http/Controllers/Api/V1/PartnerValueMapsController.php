@@ -2,29 +2,23 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Models\PartnerFieldTransform;
+use App\Models\PartnerValueMaps;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
-class PartnerFieldTransformsController extends Controller
+class PartnerValueMapsController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return response(PartnerFieldTransform::select('partner_id_left')->get()->jsonSerialize());
-    }
-
-    public function find(Request $request){
-        $left_id = $request->partner_id_left;
-        $right_id = $request->partner_id_right;
         if (isset($request->page)) {
-            return response(PartnerFieldTransform::where('partner_id_left',$left_id)->where('partner_id_right',$right_id)->paginate(12)->jsonSerialize());
+            return response(PartnerValueMaps::paginate(12)->jsonSerialize());
         } else {
-            return response(PartnerFieldTransform::where('partner_id_left',$left_id)->where('partner_id_right',$right_id)->select('id', 'partnerfield_name_left', 'partnerfield_id_left', 'partnerfield_name_right', 'partnerfield_id_right')->get()->jsonSerialize());
+            return response(PartnerValueMaps::all()->jsonSerialize());
         }
     }
 
@@ -47,12 +41,10 @@ class PartnerFieldTransformsController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'partnerfield_name_right' => 'required',
-            'partnervaluemaps_id' => 'bail|nullable|numeric|max:99999999999',
-            'required' => 'bail|nullable|numeric|max:9'
+            'valuemap' => 'required'
         ]);
-        $newPair = PartnerFieldTransform::create($request->all());
-        return $newPair;
+        $newPartnerValueMaps = PartnerValueMaps::create($request->all());
+        return $newPartnerValueMaps;
     }
 
     /**
@@ -87,12 +79,11 @@ class PartnerFieldTransformsController extends Controller
     public function update(Request $request, $id)
     {
         $this->validate($request, [
-            'partnervaluemaps_id' => 'bail|nullable|numeric|max:99999999999',
-            'required' => 'bail|nullable|numeric|max:9'
+            'valuemap' => 'required'
         ]);
-        $left_right = PartnerFieldTransform::findOrFail($id);
-        $left_right->update($request->all());
-        return $left_right;
+        $partnerValueMap = PartnerValueMaps::findOrFail($id);
+        $partnerValueMap->update($request->all());
+        return $partnerValueMap;
     }
 
     /**
@@ -103,7 +94,7 @@ class PartnerFieldTransformsController extends Controller
      */
     public function destroy($id)
     {
-        $left_right = PartnerFieldTransform::findOrFail($id);
-        $left_right->delete();
+        $partnerValueMap = PartnerValueMaps::findOrFail($id);
+        $partnerValueMap->delete();
     }
 }

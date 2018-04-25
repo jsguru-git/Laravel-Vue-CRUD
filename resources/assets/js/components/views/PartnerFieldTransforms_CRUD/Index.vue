@@ -4,12 +4,14 @@
 		<c-modal :show="showCModal" @close="showCModal = false" @saved="getLRList(current_page)"
 			:left-partner-id="left_partner_id" :right-partner-id="right_partner_id"
 			:left-all-fields="left_partner_all_fields" :left-hid-fields="c_left_hid_list" 
-			:right-all-fields="right_partner_all_fields" :right-hid-fields="c_right_hid_list"></c-modal>
+			:right-all-fields="right_partner_all_fields" :right-hid-fields="c_right_hid_list"
+			:partner-value-maps="partner_value_maps"></c-modal>
 		<!-- edit modal -->
 		<e-modal :show="showEModal" @close="showEModal = false" @saved="afterEdit"
 			:entry="entry"
 			:left-all-fields="left_partner_all_fields" :left-hid-fields="e_left_hid_list"
-			:right-all-fields="right_partner_all_fields" :right-hid-fields="e_right_hid_list"></e-modal>
+			:right-all-fields="right_partner_all_fields" :right-hid-fields="e_right_hid_list"
+			:partner-value-maps="partner_value_maps"></e-modal>
 		<div class="form-group">
 			<button class="btn btn-success" @click="showCModal = true">Create</button>
 		</div>
@@ -19,15 +21,29 @@
 				<table class="table table-bordered table-striped">
 					<thead>
 						<tr>
-							<th>Left Partner(<span class="partner-name">{{left_partner}}</span>) field Name</th>
-							<th>Right Partner(<span class="partner-name">{{right_partner}}</span>) field Name</th>
-							<th width="20%">&nbsp;</th>
+							<th>Left Partner&nbsp;(<span class="partner-name">&nbsp;{{left_partner}}&nbsp;</span>) field Name</th>
+							<th>Right Partner&nbsp;(<span class="partner-name">&nbsp;{{right_partner}}&nbsp;</span>) field Name</th>
+							<th>sanitizer</th>
+							<th>transforms</th>
+							<th>partnervaluemaps id</th>
+							<th>default if empty</th>
+							<th>hardcoded</th>
+							<th>required</th>
+							<th>note</th>
+							<th width="10%">&nbsp;</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr v-for="entry, index in entry_list.data" :key="index">
 							<td>{{ entry.partnerfield_name_left }}</td>
 							<td>{{ entry.partnerfield_name_right }}</td>
+							<td>{{ entry.sanitizer }}</td>
+							<td>{{ entry.transforms }}</td>
+							<td>{{ entry.partnervaluemaps_id }}</td>
+							<td>{{ entry.default_if_empty }}</td>
+							<td>{{ entry.hardcoded }}</td>
+							<td>{{ entry.required }}</td>
+							<td>{{ entry.note }}</td>
 							<td>
 								<button
 									class="btn btn-xs btn-default"
@@ -77,6 +93,7 @@
 				right_partner_id: null,					// ID of right partner
 				left_partner_all_fields: {},			// all field list of left partner from partnerfields table
 				right_partner_all_fields: {},			// all field list of right partner from partnerfields table
+				partner_value_maps: {},					// all partnervaluemaps from partnervaluemaps table
 				showCModal: false,
 				showEModal: false,
 				current_page: null,
@@ -91,6 +108,7 @@
 			app.getLRList()
 			app.getAllLRList()
 			app.getTwoPartnerFields()
+			app.getPartnerValueMaps()
 		},
 		methods: {
 			/*
@@ -237,6 +255,18 @@
 					app.right_partner_all_fields = split.join(array, {key:'fieldname', value:'id'})
 					console.log('right partner all fields...')
 					console.log(app.right_partner_all_fields)
+				})
+				.catch(function(resp) {
+					console.log(resp)
+				})
+			},
+			getPartnerValueMaps() {
+				var app = this
+				app.axios.get('/api/v1/partnervaluemaps')
+				.then(function(resp) {
+					app.partner_value_maps = resp.data
+					console.log('all partnervaluemaps.')
+					console.log(resp.data)
 				})
 				.catch(function(resp) {
 					console.log(resp)

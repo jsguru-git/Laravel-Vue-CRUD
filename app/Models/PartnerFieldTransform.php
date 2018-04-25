@@ -49,6 +49,7 @@ class PartnerFieldTransform extends Model
         'partnervaluemaps_id',
         'default_if_empty',
         'hardcoded',
+        'required', // added by alexei 4/25/2018
         'note',
     ];
 

@@ -17,7 +17,8 @@ class CreatePartnerfieldtransformsTable extends Migration {
 			$table->increments('id');
 			$table->integer('partnerid_left')->nullable();
 			$table->integer('partnerid_right')->nullable();
-			$table->integer('partnerfield_id_left');
+			// $table->integer('partnerfield_id_left');
+			$table->integer('partnerfield_id_left')->nullable();	// allowed nullable by alexei 4/25/2018
 			$table->string('partnerfield_name_left', 100)->nullable();
 			$table->integer('partnerfield_id_right');
 			$table->string('partnerfield_name_right', 100)->nullable();

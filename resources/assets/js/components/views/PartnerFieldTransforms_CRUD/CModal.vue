@@ -10,19 +10,61 @@
 	            </label>
 	            <select
 					class="form-control"
-					v-model="pair.partnerfield_name_left">
+					v-model="entry.partnerfield_name_left">
 					<option v-for="(id,field) in leftAllFields" :value="field" v-if="!(field in leftHidFields)" :key="id">{{field}}</option>
 				</select>
 			</div>
-			<div class="form-group">
+			<div class="form-group" v-bind:class="{'has-error':errors.partnerfield_name_right}">
 	            <label class="form-label">
 	                Right Partner field Name
 	            </label>
 	            <select
 					class="form-control"
-					v-model="pair.partnerfield_name_right">
+					v-model="entry.partnerfield_name_right">
 					<option v-for="(id,field) in rightAllFields" :value="field" v-if="!(field in rightHidFields)" :key="id">{{field}}</option>
 				</select>
+				<div v-if="errors.partnerfield_name_right" class="help-block">
+					<span v-for="error in errors.partnerfield_name_right">{{ error }}</span>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="form-label">sanitizer</label>
+				<input class="form-control" v-model="entry.sanitizer">
+			</div>
+			<div class="form-group">
+				<label class="form-label">transforms</label>
+				<input class="form-control" v-model="entry.transforms">
+			</div>
+			<div class="form-group" v-bind:class="{'has-error':errors.partnervaluemaps_id}">
+				<label class="form-label">partnervaluemaps id</label>
+				<!-- <input class="form-control" v-model="entry.partnervaluemaps_id"> -->
+				<select
+					class="form-control"
+					v-model="entry.partnervaluemaps_id">
+					<option v-for="item, index in partnerValueMaps" :value="item.id" :key="index">{{item.name}}</option>
+				</select>
+				<div v-if="errors.partnervaluemaps_id" class="help-block">
+					<span v-for="error in errors.partnervaluemaps_id">{{ error }}</span>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="form-label">default if empty</label>
+				<input class="form-control" v-model="entry.default_if_empty">
+			</div>
+			<div class="form-group">
+				<label class="form-label">hardcoded</label>
+				<input class="form-control" v-model="entry.hardcoded">
+			</div>
+			<div class="form-group" v-bind:class="{'has-error':errors.required}">
+				<label class="form-label">required</label>
+				<input class="form-control" v-model="entry.required">
+				<div v-if="errors.required" class="help-block">
+					<span v-for="error in errors.required">{{ error }}</span>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="form-label">note</label>
+				<input class="form-control" v-model="entry.note">
 			</div>
         </div>
         <div class="modal-footer text-right">
@@ -43,29 +85,28 @@
 			leftHidFields: Object,
 			rightAllFields: Object,
 			rightHidFields: Object,
+			partnerValueMaps: Object,
 		},
 		components: {
 			Modal,
 		},
 		data() {
 			return {
-				pair: {
-					partnerfield_name_left: null,
-					partnerfield_name_right: null,
-				}
+				entry: {},
+				errors: {},
 			}
 		},
 		methods: {
 			close: function() {
 				var app = this
 				app.$emit('close')
-				app.pair.partnerfield_name_left = null
-				app.pair.partnerfield_name_right = null
+				app.entry = {}
+				app.errors = {}
 			},
 			savePair: function() {
 				var app = this
-				var selected_field_name_left = app.pair.partnerfield_name_left,
-					selected_field_name_right = app.pair.partnerfield_name_right
+				var selected_field_name_left = app.entry.partnerfield_name_left,
+					selected_field_name_right = app.entry.partnerfield_name_right
 
 				/*
 				*	please see below
@@ -73,39 +114,32 @@
 				*		null == undefined	-> true
 				*		null === null		-> true
 				*/
-				// if(selected_field_name_left != undefined && selected_field_name_right != undefined) {
-				if(selected_field_name_right != undefined) {
-					var newPair = {}
-					newPair.partner_id_left = app.leftPartnerId
-					newPair.partner_id_right = app.rightPartnerId
-					newPair.partnerfield_name_left = selected_field_name_left
-					newPair.partnerfield_name_right = selected_field_name_right
-					newPair.partnerfield_id_left = app.leftAllFields[selected_field_name_left]
-					newPair.partnerfield_id_right = app.rightAllFields[selected_field_name_right]
-					console.log('new pair...')
-					console.log(newPair)
-					app.axios.post('/api/v1/partnerfieldmapper', newPair)
-						.then(function(resp) {
-							// add left field and right field of new pair into their hid fields list respectively.
-							var key = newPair.partnerfield_name_left  							// field name
-							var value = app.leftAllFields[newPair.partnerfield_name_left]		// field ID
-							app.leftHidFields[key] = value
+				app.entry.partner_id_left = app.leftPartnerId
+				app.entry.partner_id_right = app.rightPartnerId
+				app.entry.partnerfield_id_left = app.leftAllFields[selected_field_name_left]
+				app.entry.partnerfield_id_right = app.rightAllFields[selected_field_name_right]
+				console.log('new pair...')
+				console.log(app.entry)
+				app.axios.post('/api/v1/partnerfieldmapper', app.entry)
+				.then(function(resp) {
+					// add left field and right field of new pair into their hid fields list respectively.
+					var key = app.entry.partnerfield_name_left  							// field name
+					var value = app.leftAllFields[app.entry.partnerfield_name_left]			// field ID
+					app.leftHidFields[key] = value
 
-							key = newPair.partnerfield_name_right								// field name
-							value = app.rightAllFields[newPair.partnerfield_name_right]			// field ID
-							app.rightHidFields[key] = value		
-							// app.$emit('saved', app.leftHidFields, app.rightHidFields)
-							app.$emit('saved')
-							console.log('new pair created.')
-							console.log(resp.data)
-						})
-						.catch(function(resp) {
-							alert("Could not create mapper pair.")
-						})
+					key = app.entry.partnerfield_name_right									// field name
+					value = app.rightAllFields[app.entry.partnerfield_name_right]			// field ID
+					app.rightHidFields[key] = value
+					app.$emit('saved')
 					app.close()
-				} else {
-					alert("Please select at least the right partner field.")
-				}
+					console.log('new pair created.')
+					console.log(resp.data)
+				})
+				.catch(function(resp) {
+					app.errors = resp.response.data
+					console.log("error message")
+					console.log(app.errors)
+				})
 			},
 		},
 	}

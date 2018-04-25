@@ -12,6 +12,9 @@
           <router-link :to="'/partnerfields'" class="nav-link">PartnerFields CRUD<span class="badge badge-info">NEW</span></router-link>
         </li>
         <li class="nav-item">
+          <router-link :to="'/partnervaluemaps'" class="nav-link">PartnerValueMaps CRUD<span class="badge badge-info">NEW</span></router-link>
+        </li>
+        <li class="nav-item">
           <router-link :to="'/mapper/partner-picker'" class="nav-link">PartnerFieldTransforms CRUD<span class="badge badge-info">NEW</span></router-link>
         </li>
       </ul>

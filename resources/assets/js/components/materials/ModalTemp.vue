@@ -33,6 +33,7 @@
 	.modal-mask {
 	    position: fixed;
 	    z-index: 9998;
+	    overflow: scroll;
 	    top: 0;
 	    left: 0;
 	    width: 100%;
@@ -43,7 +44,7 @@
 
 	.modal-container {
 	    width: 400px;
-	    margin: 40px auto 0;
+	    margin: 40px auto 40px;
 	    padding: 20px 30px;
 	    background-color: #fff;
 	    border-radius: 2px;

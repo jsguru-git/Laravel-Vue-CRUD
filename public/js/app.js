@@ -12578,6 +12578,9 @@ module.exports = Cancel;
 //
 //
 //
+//
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["a"] = ({
@@ -12756,6 +12759,22 @@ module.exports = Cancel;
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -12782,6 +12801,7 @@ module.exports = Cancel;
 			right_partner_id: null, // ID of right partner
 			left_partner_all_fields: {}, // all field list of left partner from partnerfields table
 			right_partner_all_fields: {}, // all field list of right partner from partnerfields table
+			partner_value_maps: {}, // all partnervaluemaps from partnervaluemaps table
 			showCModal: false,
 			showEModal: false,
 			current_page: null
@@ -12796,6 +12816,7 @@ module.exports = Cancel;
 		app.getLRList();
 		app.getAllLRList();
 		app.getTwoPartnerFields();
+		app.getPartnerValueMaps();
 	},
 
 	methods: {
@@ -12939,6 +12960,16 @@ module.exports = Cancel;
 				console.log(resp);
 			});
 		},
+		getPartnerValueMaps: function getPartnerValueMaps() {
+			var app = this;
+			app.axios.get('/api/v1/partnervaluemaps').then(function (resp) {
+				app.partner_value_maps = resp.data;
+				console.log('all partnervaluemaps.');
+				console.log(resp.data);
+			}).catch(function (resp) {
+				console.log(resp);
+			});
+		},
 		afterEdit: function afterEdit(updated_cLeftHidList, updated_cRightHidList) {
 			var app = this;
 			app.c_left_hid_list = updated_cLeftHidList;
@@ -12988,6 +13019,48 @@ module.exports = Cancel;
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["a"] = ({
@@ -12998,17 +13071,16 @@ module.exports = Cancel;
 		leftAllFields: Object,
 		leftHidFields: Object,
 		rightAllFields: Object,
-		rightHidFields: Object
+		rightHidFields: Object,
+		partnerValueMaps: Object
 	},
 	components: {
 		Modal: __WEBPACK_IMPORTED_MODULE_0__materials_ModalTemp_vue__["a" /* default */]
 	},
 	data: function data() {
 		return {
-			pair: {
-				partnerfield_name_left: null,
-				partnerfield_name_right: null
-			}
+			entry: {},
+			errors: {}
 		};
 	},
 
@@ -13016,13 +13088,13 @@ module.exports = Cancel;
 		close: function close() {
 			var app = this;
 			app.$emit('close');
-			app.pair.partnerfield_name_left = null;
-			app.pair.partnerfield_name_right = null;
+			app.entry = {};
+			app.errors = {};
 		},
 		savePair: function savePair() {
 			var app = this;
-			var selected_field_name_left = app.pair.partnerfield_name_left,
-			    selected_field_name_right = app.pair.partnerfield_name_right;
+			var selected_field_name_left = app.entry.partnerfield_name_left,
+			    selected_field_name_right = app.entry.partnerfield_name_right;
 
 			/*
    *	please see below
@@ -13030,37 +13102,30 @@ module.exports = Cancel;
    *		null == undefined	-> true
    *		null === null		-> true
    */
-			// if(selected_field_name_left != undefined && selected_field_name_right != undefined) {
-			if (selected_field_name_right != undefined) {
-				var newPair = {};
-				newPair.partner_id_left = app.leftPartnerId;
-				newPair.partner_id_right = app.rightPartnerId;
-				newPair.partnerfield_name_left = selected_field_name_left;
-				newPair.partnerfield_name_right = selected_field_name_right;
-				newPair.partnerfield_id_left = app.leftAllFields[selected_field_name_left];
-				newPair.partnerfield_id_right = app.rightAllFields[selected_field_name_right];
-				console.log('new pair...');
-				console.log(newPair);
-				app.axios.post('/api/v1/partnerfieldmapper', newPair).then(function (resp) {
-					// add left field and right field of new pair into their hid fields list respectively.
-					var key = newPair.partnerfield_name_left; // field name
-					var value = app.leftAllFields[newPair.partnerfield_name_left]; // field ID
-					app.leftHidFields[key] = value;
+			app.entry.partner_id_left = app.leftPartnerId;
+			app.entry.partner_id_right = app.rightPartnerId;
+			app.entry.partnerfield_id_left = app.leftAllFields[selected_field_name_left];
+			app.entry.partnerfield_id_right = app.rightAllFields[selected_field_name_right];
+			console.log('new pair...');
+			console.log(app.entry);
+			app.axios.post('/api/v1/partnerfieldmapper', app.entry).then(function (resp) {
+				// add left field and right field of new pair into their hid fields list respectively.
+				var key = app.entry.partnerfield_name_left; // field name
+				var value = app.leftAllFields[app.entry.partnerfield_name_left]; // field ID
+				app.leftHidFields[key] = value;
 
-					key = newPair.partnerfield_name_right; // field name
-					value = app.rightAllFields[newPair.partnerfield_name_right]; // field ID
-					app.rightHidFields[key] = value;
-					// app.$emit('saved', app.leftHidFields, app.rightHidFields)
-					app.$emit('saved');
-					console.log('new pair created.');
-					console.log(resp.data);
-				}).catch(function (resp) {
-					alert("Could not create mapper pair.");
-				});
+				key = app.entry.partnerfield_name_right; // field name
+				value = app.rightAllFields[app.entry.partnerfield_name_right]; // field ID
+				app.rightHidFields[key] = value;
+				app.$emit('saved');
 				app.close();
-			} else {
-				alert("Please select at least the right partner field.");
-			}
+				console.log('new pair created.');
+				console.log(resp.data);
+			}).catch(function (resp) {
+				app.errors = resp.response.data;
+				console.log("error message");
+				console.log(app.errors);
+			});
 		}
 	}
 });
@@ -13137,6 +13202,45 @@ module.exports = Cancel;
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["a"] = ({
@@ -13155,7 +13259,8 @@ module.exports = Cancel;
 		leftAllFields: Object,
 		leftHidFields: Object,
 		rightAllFields: Object,
-		rightHidFields: Object
+		rightHidFields: Object,
+		partnerValueMaps: Object
 	},
 	components: {
 		Modal: __WEBPACK_IMPORTED_MODULE_0__materials_ModalTemp_vue__["a" /* default */]
@@ -13165,36 +13270,41 @@ module.exports = Cancel;
 			pair: {
 				partnerfield_name_left: null,
 				partnerfield_name_right: null
-			}
+			},
+			errors: {}
 		};
 	},
 
 	methods: {
 		close: function close() {
 			var app = this;
+			app.errors = {};
 			app.$emit('close');
 		},
 		savePair: function savePair() {
 			var app = this;
 			// var newPair = app.pair
 			var newPair = {};
+
+			// newPair.partnerfield_name_left = app.entry.partnerfield_name_left
+			// newPair.partnerfield_name_right = app.entry.partnerfield_name_right
 			// Get partner field ID
-			newPair.partnerfield_name_left = app.entry.partnerfield_name_left;
-			newPair.partnerfield_name_right = app.entry.partnerfield_name_right;
-			newPair.partnerfield_id_left = app.leftAllFields[newPair.partnerfield_name_left];
-			newPair.partnerfield_id_right = app.rightAllFields[newPair.partnerfield_name_right];
-			app.axios.patch('/api/v1/partnerfieldmapper/' + app.entry.id, newPair).then(function (resp) {
+			app.entry.partnerfield_id_left = app.leftAllFields[newPair.partnerfield_name_left];
+			app.entry.partnerfield_id_right = app.rightAllFields[newPair.partnerfield_name_right];
+			app.axios.patch('/api/v1/partnerfieldmapper/' + app.entry.id, app.entry).then(function (resp) {
 				var e_left_hid_list = Object.assign({}, app.leftHidFields);
 				var e_right_hid_list = Object.assign({}, app.rightHidFields);
 				e_left_hid_list[resp.data.partnerfield_name_left] = resp.data.partnerfield_id_left;
 				e_right_hid_list[resp.data.partnerfield_name_right] = resp.data.partnerfield_id_right;
 				app.$emit('saved', e_left_hid_list, e_right_hid_list);
+				app.close();
 				console.log('pair updated');
 				console.log(resp.data);
 			}).catch(function (resp) {
-				alert("Could not update mapper pair");
+				app.errors = resp.response.data;
+				console.log("error message");
+				console.log(app.errors);
 			});
-			app.close();
 		}
 	}
 });
@@ -15413,6 +15523,22 @@ var render = function() {
           [
             _c(
               "router-link",
+              { staticClass: "nav-link", attrs: { to: "/partnervaluemaps" } },
+              [
+                _vm._v("PartnerValueMaps CRUD"),
+                _c("span", { staticClass: "badge badge-info" }, [_vm._v("NEW")])
+              ]
+            )
+          ],
+          1
+        ),
+        _vm._v(" "),
+        _c(
+          "li",
+          { staticClass: "nav-item" },
+          [
+            _c(
+              "router-link",
               {
                 staticClass: "nav-link",
                 attrs: { to: "/mapper/partner-picker" }
@@ -15613,6 +15739,8 @@ if (false) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__components_views_PartnerFieldTransforms_CRUD_Index_vue__ = __webpack_require__(80);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__components_views_Partner_CRUD_Index_vue__ = __webpack_require__(90);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__components_views_PartnerFields_CRUD_Index_vue__ = __webpack_require__(96);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__components_views_PartnerValueMaps_CRUD_Index_vue__ = __webpack_require__(115);
+
 
 
 
@@ -15651,6 +15779,10 @@ __WEBPACK_IMPORTED_MODULE_0_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_1_vue_
 		name: 'PartnerFields',
 		path: '/partnerfields',
 		component: __WEBPACK_IMPORTED_MODULE_7__components_views_PartnerFields_CRUD_Index_vue__["a" /* default */]
+	}, {
+		name: 'PartnerValueMaps',
+		path: '/partnervaluemaps',
+		component: __WEBPACK_IMPORTED_MODULE_8__components_views_PartnerValueMaps_CRUD_Index_vue__["a" /* default */]
 	}]
 }));
 
@@ -18799,7 +18931,7 @@ exports = module.exports = __webpack_require__(3)(false);
 
 
 // module
-exports.push([module.i, "\n* {\n    -webkit-box-sizing: border-box;\n            box-sizing: border-box;\n}\n.modal-mask {\n    position: fixed;\n    z-index: 9998;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    background-color: rgba(0, 0, 0, .5);\n    -webkit-transition: opacity .3s ease;\n    transition: opacity .3s ease;\n}\n.modal-container {\n    width: 400px;\n    margin: 40px auto 0;\n    padding: 20px 30px;\n    background-color: #fff;\n    border-radius: 2px;\n    -webkit-box-shadow: 0 2px 8px rgba(0, 0, 0, .33);\n            box-shadow: 0 2px 8px rgba(0, 0, 0, .33);\n    -webkit-transition: all .3s ease;\n    transition: all .3s ease;\n    font-family: Helvetica, Arial, sans-serif;\n}\n.modal-header h3 {\n    margin-top: 0;\n    color: #42b983;\n}\n.modal-body {\n    margin: 20px 0;\n}\n.text-right {\n    text-align: right;\n}\n.form-label > .form-control {\n    margin-top: 0.5em;\n}\n.form-control {\n    display: block;\n    width: 100%;\n    padding: 0.5em 1em;\n    line-height: 1.5;\n    border: 1px solid #ddd;\n}\n\n/*\n * The following styles are auto-applied to elements with\n * transition=\"modal\" when their visibility is toggled\n * by Vue.js.\n *\n * You can easily play with the modal transition by editing\n * these styles.\n */\n.modal-enter {\n    opacity: 0;\n}\n.modal-leave-active {\n    opacity: 0;\n}\n.modal-enter .modal-container,\n.modal-leave-active .modal-container {\n    -webkit-transform: scale(1.1);\n    transform: scale(1.1);\n}\n", ""]);
+exports.push([module.i, "\n* {\n    -webkit-box-sizing: border-box;\n            box-sizing: border-box;\n}\n.modal-mask {\n    position: fixed;\n    z-index: 9998;\n    overflow: scroll;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    background-color: rgba(0, 0, 0, .5);\n    -webkit-transition: opacity .3s ease;\n    transition: opacity .3s ease;\n}\n.modal-container {\n    width: 400px;\n    margin: 40px auto 40px;\n    padding: 20px 30px;\n    background-color: #fff;\n    border-radius: 2px;\n    -webkit-box-shadow: 0 2px 8px rgba(0, 0, 0, .33);\n            box-shadow: 0 2px 8px rgba(0, 0, 0, .33);\n    -webkit-transition: all .3s ease;\n    transition: all .3s ease;\n    font-family: Helvetica, Arial, sans-serif;\n}\n.modal-header h3 {\n    margin-top: 0;\n    color: #42b983;\n}\n.modal-body {\n    margin: 20px 0;\n}\n.text-right {\n    text-align: right;\n}\n.form-label > .form-control {\n    margin-top: 0.5em;\n}\n.form-control {\n    display: block;\n    width: 100%;\n    padding: 0.5em 1em;\n    line-height: 1.5;\n    border: 1px solid #ddd;\n}\n\n/*\n * The following styles are auto-applied to elements with\n * transition=\"modal\" when their visibility is toggled\n * by Vue.js.\n *\n * You can easily play with the modal transition by editing\n * these styles.\n */\n.modal-enter {\n    opacity: 0;\n}\n.modal-leave-active {\n    opacity: 0;\n}\n.modal-enter .modal-container,\n.modal-leave-active .modal-container {\n    -webkit-transform: scale(1.1);\n    transform: scale(1.1);\n}\n", ""]);
 
 // exports
 
@@ -18887,8 +19019,8 @@ var render = function() {
               {
                 name: "model",
                 rawName: "v-model",
-                value: _vm.pair.partnerfield_name_left,
-                expression: "pair.partnerfield_name_left"
+                value: _vm.entry.partnerfield_name_left,
+                expression: "entry.partnerfield_name_left"
               }
             ],
             staticClass: "form-control",
@@ -18903,7 +19035,7 @@ var render = function() {
                     return val
                   })
                 _vm.$set(
-                  _vm.pair,
+                  _vm.entry,
                   "partnerfield_name_left",
                   $event.target.multiple ? $$selectedVal : $$selectedVal[0]
                 )
@@ -18920,49 +19052,299 @@ var render = function() {
         )
       ]),
       _vm._v(" "),
+      _c(
+        "div",
+        {
+          staticClass: "form-group",
+          class: { "has-error": _vm.errors.partnerfield_name_right }
+        },
+        [
+          _c("label", { staticClass: "form-label" }, [
+            _vm._v(
+              "\n\t                Right Partner field Name\n\t            "
+            )
+          ]),
+          _vm._v(" "),
+          _c(
+            "select",
+            {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.entry.partnerfield_name_right,
+                  expression: "entry.partnerfield_name_right"
+                }
+              ],
+              staticClass: "form-control",
+              on: {
+                change: function($event) {
+                  var $$selectedVal = Array.prototype.filter
+                    .call($event.target.options, function(o) {
+                      return o.selected
+                    })
+                    .map(function(o) {
+                      var val = "_value" in o ? o._value : o.value
+                      return val
+                    })
+                  _vm.$set(
+                    _vm.entry,
+                    "partnerfield_name_right",
+                    $event.target.multiple ? $$selectedVal : $$selectedVal[0]
+                  )
+                }
+              }
+            },
+            _vm._l(_vm.rightAllFields, function(id, field) {
+              return !(field in _vm.rightHidFields)
+                ? _c("option", { key: id, domProps: { value: field } }, [
+                    _vm._v(_vm._s(field))
+                  ])
+                : _vm._e()
+            })
+          ),
+          _vm._v(" "),
+          _vm.errors.partnerfield_name_right
+            ? _c(
+                "div",
+                { staticClass: "help-block" },
+                _vm._l(_vm.errors.partnerfield_name_right, function(error) {
+                  return _c("span", [_vm._v(_vm._s(error))])
+                })
+              )
+            : _vm._e()
+        ]
+      ),
+      _vm._v(" "),
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", { staticClass: "form-label" }, [_vm._v("sanitizer")]),
+        _vm._v(" "),
+        _c("input", {
+          directives: [
+            {
+              name: "model",
+              rawName: "v-model",
+              value: _vm.entry.sanitizer,
+              expression: "entry.sanitizer"
+            }
+          ],
+          staticClass: "form-control",
+          domProps: { value: _vm.entry.sanitizer },
+          on: {
+            input: function($event) {
+              if ($event.target.composing) {
+                return
+              }
+              _vm.$set(_vm.entry, "sanitizer", $event.target.value)
+            }
+          }
+        })
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", { staticClass: "form-label" }, [_vm._v("transforms")]),
+        _vm._v(" "),
+        _c("input", {
+          directives: [
+            {
+              name: "model",
+              rawName: "v-model",
+              value: _vm.entry.transforms,
+              expression: "entry.transforms"
+            }
+          ],
+          staticClass: "form-control",
+          domProps: { value: _vm.entry.transforms },
+          on: {
+            input: function($event) {
+              if ($event.target.composing) {
+                return
+              }
+              _vm.$set(_vm.entry, "transforms", $event.target.value)
+            }
+          }
+        })
+      ]),
+      _vm._v(" "),
+      _c(
+        "div",
+        {
+          staticClass: "form-group",
+          class: { "has-error": _vm.errors.partnervaluemaps_id }
+        },
+        [
+          _c("label", { staticClass: "form-label" }, [
+            _vm._v("partnervaluemaps id")
+          ]),
+          _vm._v(" "),
+          _c(
+            "select",
+            {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.entry.partnervaluemaps_id,
+                  expression: "entry.partnervaluemaps_id"
+                }
+              ],
+              staticClass: "form-control",
+              on: {
+                change: function($event) {
+                  var $$selectedVal = Array.prototype.filter
+                    .call($event.target.options, function(o) {
+                      return o.selected
+                    })
+                    .map(function(o) {
+                      var val = "_value" in o ? o._value : o.value
+                      return val
+                    })
+                  _vm.$set(
+                    _vm.entry,
+                    "partnervaluemaps_id",
+                    $event.target.multiple ? $$selectedVal : $$selectedVal[0]
+                  )
+                }
+              }
+            },
+            _vm._l(_vm.partnerValueMaps, function(item, index) {
+              return _c(
+                "option",
+                { key: index, domProps: { value: item.id } },
+                [_vm._v(_vm._s(item.name))]
+              )
+            })
+          ),
+          _vm._v(" "),
+          _vm.errors.partnervaluemaps_id
+            ? _c(
+                "div",
+                { staticClass: "help-block" },
+                _vm._l(_vm.errors.partnervaluemaps_id, function(error) {
+                  return _c("span", [_vm._v(_vm._s(error))])
+                })
+              )
+            : _vm._e()
+        ]
+      ),
+      _vm._v(" "),
       _c("div", { staticClass: "form-group" }, [
         _c("label", { staticClass: "form-label" }, [
-          _vm._v("\n\t                Right Partner field Name\n\t            ")
+          _vm._v("default if empty")
         ]),
         _vm._v(" "),
-        _c(
-          "select",
-          {
+        _c("input", {
+          directives: [
+            {
+              name: "model",
+              rawName: "v-model",
+              value: _vm.entry.default_if_empty,
+              expression: "entry.default_if_empty"
+            }
+          ],
+          staticClass: "form-control",
+          domProps: { value: _vm.entry.default_if_empty },
+          on: {
+            input: function($event) {
+              if ($event.target.composing) {
+                return
+              }
+              _vm.$set(_vm.entry, "default_if_empty", $event.target.value)
+            }
+          }
+        })
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", { staticClass: "form-label" }, [_vm._v("hardcoded")]),
+        _vm._v(" "),
+        _c("input", {
+          directives: [
+            {
+              name: "model",
+              rawName: "v-model",
+              value: _vm.entry.hardcoded,
+              expression: "entry.hardcoded"
+            }
+          ],
+          staticClass: "form-control",
+          domProps: { value: _vm.entry.hardcoded },
+          on: {
+            input: function($event) {
+              if ($event.target.composing) {
+                return
+              }
+              _vm.$set(_vm.entry, "hardcoded", $event.target.value)
+            }
+          }
+        })
+      ]),
+      _vm._v(" "),
+      _c(
+        "div",
+        {
+          staticClass: "form-group",
+          class: { "has-error": _vm.errors.required }
+        },
+        [
+          _c("label", { staticClass: "form-label" }, [_vm._v("required")]),
+          _vm._v(" "),
+          _c("input", {
             directives: [
               {
                 name: "model",
                 rawName: "v-model",
-                value: _vm.pair.partnerfield_name_right,
-                expression: "pair.partnerfield_name_right"
+                value: _vm.entry.required,
+                expression: "entry.required"
               }
             ],
             staticClass: "form-control",
+            domProps: { value: _vm.entry.required },
             on: {
-              change: function($event) {
-                var $$selectedVal = Array.prototype.filter
-                  .call($event.target.options, function(o) {
-                    return o.selected
-                  })
-                  .map(function(o) {
-                    var val = "_value" in o ? o._value : o.value
-                    return val
-                  })
-                _vm.$set(
-                  _vm.pair,
-                  "partnerfield_name_right",
-                  $event.target.multiple ? $$selectedVal : $$selectedVal[0]
-                )
+              input: function($event) {
+                if ($event.target.composing) {
+                  return
+                }
+                _vm.$set(_vm.entry, "required", $event.target.value)
               }
             }
-          },
-          _vm._l(_vm.rightAllFields, function(id, field) {
-            return !(field in _vm.rightHidFields)
-              ? _c("option", { key: id, domProps: { value: field } }, [
-                  _vm._v(_vm._s(field))
-                ])
-              : _vm._e()
-          })
-        )
+          }),
+          _vm._v(" "),
+          _vm.errors.required
+            ? _c(
+                "div",
+                { staticClass: "help-block" },
+                _vm._l(_vm.errors.required, function(error) {
+                  return _c("span", [_vm._v(_vm._s(error))])
+                })
+              )
+            : _vm._e()
+        ]
+      ),
+      _vm._v(" "),
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", { staticClass: "form-label" }, [_vm._v("note")]),
+        _vm._v(" "),
+        _c("input", {
+          directives: [
+            {
+              name: "model",
+              rawName: "v-model",
+              value: _vm.entry.note,
+              expression: "entry.note"
+            }
+          ],
+          staticClass: "form-control",
+          domProps: { value: _vm.entry.note },
+          on: {
+            input: function($event) {
+              if ($event.target.composing) {
+                return
+              }
+              _vm.$set(_vm.entry, "note", $event.target.value)
+            }
+          }
+        })
       ])
     ]),
     _vm._v(" "),
@@ -19151,6 +19533,237 @@ var render = function() {
               : _vm._e()
           })
         )
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", { staticClass: "form-label" }, [_vm._v("sanitizer")]),
+        _vm._v(" "),
+        _c("input", {
+          directives: [
+            {
+              name: "model",
+              rawName: "v-model",
+              value: _vm.entry.sanitizer,
+              expression: "entry.sanitizer"
+            }
+          ],
+          staticClass: "form-control",
+          domProps: { value: _vm.entry.sanitizer },
+          on: {
+            input: function($event) {
+              if ($event.target.composing) {
+                return
+              }
+              _vm.$set(_vm.entry, "sanitizer", $event.target.value)
+            }
+          }
+        })
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", { staticClass: "form-label" }, [_vm._v("transforms")]),
+        _vm._v(" "),
+        _c("input", {
+          directives: [
+            {
+              name: "model",
+              rawName: "v-model",
+              value: _vm.entry.transforms,
+              expression: "entry.transforms"
+            }
+          ],
+          staticClass: "form-control",
+          domProps: { value: _vm.entry.transforms },
+          on: {
+            input: function($event) {
+              if ($event.target.composing) {
+                return
+              }
+              _vm.$set(_vm.entry, "transforms", $event.target.value)
+            }
+          }
+        })
+      ]),
+      _vm._v(" "),
+      _c(
+        "div",
+        {
+          staticClass: "form-group",
+          class: { "has-error": _vm.errors.partnervaluemaps_id }
+        },
+        [
+          _c("label", { staticClass: "form-label" }, [
+            _vm._v("partnervaluemaps id")
+          ]),
+          _vm._v(" "),
+          _c(
+            "select",
+            {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.entry.partnervaluemaps_id,
+                  expression: "entry.partnervaluemaps_id"
+                }
+              ],
+              staticClass: "form-control",
+              on: {
+                change: function($event) {
+                  var $$selectedVal = Array.prototype.filter
+                    .call($event.target.options, function(o) {
+                      return o.selected
+                    })
+                    .map(function(o) {
+                      var val = "_value" in o ? o._value : o.value
+                      return val
+                    })
+                  _vm.$set(
+                    _vm.entry,
+                    "partnervaluemaps_id",
+                    $event.target.multiple ? $$selectedVal : $$selectedVal[0]
+                  )
+                }
+              }
+            },
+            _vm._l(_vm.partnerValueMaps, function(item, index) {
+              return _c(
+                "option",
+                { key: index, domProps: { value: item.id } },
+                [_vm._v(_vm._s(item.name))]
+              )
+            })
+          ),
+          _vm._v(" "),
+          _vm.errors.partnervaluemaps_id
+            ? _c(
+                "div",
+                { staticClass: "help-block" },
+                _vm._l(_vm.errors.partnervaluemaps_id, function(error) {
+                  return _c("span", [_vm._v(_vm._s(error))])
+                })
+              )
+            : _vm._e()
+        ]
+      ),
+      _vm._v(" "),
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", { staticClass: "form-label" }, [
+          _vm._v("default if empty")
+        ]),
+        _vm._v(" "),
+        _c("input", {
+          directives: [
+            {
+              name: "model",
+              rawName: "v-model",
+              value: _vm.entry.default_if_empty,
+              expression: "entry.default_if_empty"
+            }
+          ],
+          staticClass: "form-control",
+          domProps: { value: _vm.entry.default_if_empty },
+          on: {
+            input: function($event) {
+              if ($event.target.composing) {
+                return
+              }
+              _vm.$set(_vm.entry, "default_if_empty", $event.target.value)
+            }
+          }
+        })
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", { staticClass: "form-label" }, [_vm._v("hardcoded")]),
+        _vm._v(" "),
+        _c("input", {
+          directives: [
+            {
+              name: "model",
+              rawName: "v-model",
+              value: _vm.entry.hardcoded,
+              expression: "entry.hardcoded"
+            }
+          ],
+          staticClass: "form-control",
+          domProps: { value: _vm.entry.hardcoded },
+          on: {
+            input: function($event) {
+              if ($event.target.composing) {
+                return
+              }
+              _vm.$set(_vm.entry, "hardcoded", $event.target.value)
+            }
+          }
+        })
+      ]),
+      _vm._v(" "),
+      _c(
+        "div",
+        {
+          staticClass: "form-group",
+          class: { "has-error": _vm.errors.required }
+        },
+        [
+          _c("label", { staticClass: "form-label" }, [_vm._v("required")]),
+          _vm._v(" "),
+          _c("input", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model",
+                value: _vm.entry.required,
+                expression: "entry.required"
+              }
+            ],
+            staticClass: "form-control",
+            domProps: { value: _vm.entry.required },
+            on: {
+              input: function($event) {
+                if ($event.target.composing) {
+                  return
+                }
+                _vm.$set(_vm.entry, "required", $event.target.value)
+              }
+            }
+          }),
+          _vm._v(" "),
+          _vm.errors.required
+            ? _c(
+                "div",
+                { staticClass: "help-block" },
+                _vm._l(_vm.errors.required, function(error) {
+                  return _c("span", [_vm._v(_vm._s(error))])
+                })
+              )
+            : _vm._e()
+        ]
+      ),
+      _vm._v(" "),
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", { staticClass: "form-label" }, [_vm._v("note")]),
+        _vm._v(" "),
+        _c("input", {
+          directives: [
+            {
+              name: "model",
+              rawName: "v-model",
+              value: _vm.entry.note,
+              expression: "entry.note"
+            }
+          ],
+          staticClass: "form-control",
+          domProps: { value: _vm.entry.note },
+          on: {
+            input: function($event) {
+              if ($event.target.composing) {
+                return
+              }
+              _vm.$set(_vm.entry, "note", $event.target.value)
+            }
+          }
+        })
       ])
     ]),
     _vm._v(" "),
@@ -20772,7 +21385,8 @@ var render = function() {
           "left-all-fields": _vm.left_partner_all_fields,
           "left-hid-fields": _vm.c_left_hid_list,
           "right-all-fields": _vm.right_partner_all_fields,
-          "right-hid-fields": _vm.c_right_hid_list
+          "right-hid-fields": _vm.c_right_hid_list,
+          "partner-value-maps": _vm.partner_value_maps
         },
         on: {
           close: function($event) {
@@ -20791,7 +21405,8 @@ var render = function() {
           "left-all-fields": _vm.left_partner_all_fields,
           "left-hid-fields": _vm.e_left_hid_list,
           "right-all-fields": _vm.right_partner_all_fields,
-          "right-hid-fields": _vm.e_right_hid_list
+          "right-hid-fields": _vm.e_right_hid_list,
+          "partner-value-maps": _vm.partner_value_maps
         },
         on: {
           close: function($event) {
@@ -20829,22 +21444,36 @@ var render = function() {
               _c("thead", [
                 _c("tr", [
                   _c("th", [
-                    _vm._v("Left Partner("),
+                    _vm._v("Left Partner ("),
                     _c("span", { staticClass: "partner-name" }, [
-                      _vm._v(_vm._s(_vm.left_partner))
+                      _vm._v(" " + _vm._s(_vm.left_partner) + " ")
                     ]),
                     _vm._v(") field Name")
                   ]),
                   _vm._v(" "),
                   _c("th", [
-                    _vm._v("Right Partner("),
+                    _vm._v("Right Partner ("),
                     _c("span", { staticClass: "partner-name" }, [
-                      _vm._v(_vm._s(_vm.right_partner))
+                      _vm._v(" " + _vm._s(_vm.right_partner) + " ")
                     ]),
                     _vm._v(") field Name")
                   ]),
                   _vm._v(" "),
-                  _c("th", { attrs: { width: "20%" } }, [_vm._v(" ")])
+                  _c("th", [_vm._v("sanitizer")]),
+                  _vm._v(" "),
+                  _c("th", [_vm._v("transforms")]),
+                  _vm._v(" "),
+                  _c("th", [_vm._v("partnervaluemaps id")]),
+                  _vm._v(" "),
+                  _c("th", [_vm._v("default if empty")]),
+                  _vm._v(" "),
+                  _c("th", [_vm._v("hardcoded")]),
+                  _vm._v(" "),
+                  _c("th", [_vm._v("required")]),
+                  _vm._v(" "),
+                  _c("th", [_vm._v("note")]),
+                  _vm._v(" "),
+                  _c("th", { attrs: { width: "10%" } }, [_vm._v(" ")])
                 ])
               ]),
               _vm._v(" "),
@@ -20855,6 +21484,20 @@ var render = function() {
                     _c("td", [_vm._v(_vm._s(entry.partnerfield_name_left))]),
                     _vm._v(" "),
                     _c("td", [_vm._v(_vm._s(entry.partnerfield_name_right))]),
+                    _vm._v(" "),
+                    _c("td", [_vm._v(_vm._s(entry.sanitizer))]),
+                    _vm._v(" "),
+                    _c("td", [_vm._v(_vm._s(entry.transforms))]),
+                    _vm._v(" "),
+                    _c("td", [_vm._v(_vm._s(entry.partnervaluemaps_id))]),
+                    _vm._v(" "),
+                    _c("td", [_vm._v(_vm._s(entry.default_if_empty))]),
+                    _vm._v(" "),
+                    _c("td", [_vm._v(_vm._s(entry.hardcoded))]),
+                    _vm._v(" "),
+                    _c("td", [_vm._v(_vm._s(entry.required))]),
+                    _vm._v(" "),
+                    _c("td", [_vm._v(_vm._s(entry.note))]),
                     _vm._v(" "),
                     _c("td", [
                       _c(
@@ -20919,6 +21562,900 @@ if (false) {
   module.hot.accept()
   if (module.hot.data) {
     require("vue-hot-reload-api")      .rerender("data-v-56b47445", { render: render, staticRenderFns: staticRenderFns })
+  }
+}
+
+/***/ }),
+/* 115 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_cacheDirectory_true_presets_env_modules_false_targets_browsers_2_uglify_true_plugins_transform_object_rest_spread_transform_runtime_polyfill_false_helpers_false_node_modules_vue_loader_lib_selector_type_script_index_0_Index_vue__ = __webpack_require__(116);
+/* unused harmony namespace reexport */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_99debdc4_hasScoped_true_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Index_vue__ = __webpack_require__(126);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__node_modules_vue_loader_lib_runtime_component_normalizer__ = __webpack_require__(0);
+var disposed = false
+function injectStyle (context) {
+  if (disposed) return
+  __webpack_require__(124)
+}
+/* script */
+
+
+/* template */
+
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = injectStyle
+/* scopeId */
+var __vue_scopeId__ = "data-v-99debdc4"
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+
+var Component = Object(__WEBPACK_IMPORTED_MODULE_2__node_modules_vue_loader_lib_runtime_component_normalizer__["a" /* default */])(
+  __WEBPACK_IMPORTED_MODULE_0__babel_loader_cacheDirectory_true_presets_env_modules_false_targets_browsers_2_uglify_true_plugins_transform_object_rest_spread_transform_runtime_polyfill_false_helpers_false_node_modules_vue_loader_lib_selector_type_script_index_0_Index_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_99debdc4_hasScoped_true_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Index_vue__["a" /* render */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_99debdc4_hasScoped_true_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Index_vue__["b" /* staticRenderFns */],
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources\\assets\\js\\components\\views\\PartnerValueMaps_CRUD\\Index.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-99debdc4", Component.options)
+  } else {
+    hotAPI.reload("data-v-99debdc4", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+/* harmony default export */ __webpack_exports__["a"] = (Component.exports);
+
+
+/***/ }),
+/* 116 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__CModal_vue__ = __webpack_require__(118);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__EModal_vue__ = __webpack_require__(119);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_laravel_vue_pagination__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_laravel_vue_pagination___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_laravel_vue_pagination__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+	data: function data() {
+		return {
+			entry_list: {},
+			entry: {},
+			showCModal: false,
+			showEModal: false,
+			current_page: null
+		};
+	},
+
+	components: {
+		CModal: __WEBPACK_IMPORTED_MODULE_0__CModal_vue__["a" /* default */],
+		EModal: __WEBPACK_IMPORTED_MODULE_1__EModal_vue__["a" /* default */],
+		Pagination: __WEBPACK_IMPORTED_MODULE_2_laravel_vue_pagination___default.a
+	},
+	mounted: function mounted() {
+		var app = this;
+		app.getEntries();
+	},
+
+	methods: {
+		getEntries: function getEntries(page) {
+			var app = this;
+			if (typeof page === 'undefined') {
+				page = 1;
+			}
+			app.current_page = page;
+			app.axios.get('/api/v1/partnervaluemaps?page=' + page).then(function (resp) {
+				app.entry_list = resp.data;
+				console.log("PartnerValueMaps entry list");
+				console.log(resp.data);
+			}).catch(function (resp) {
+				console.log(resp);
+			});
+		},
+		editEntry: function editEntry(entry) {
+			var app = this;
+			app.showEModal = true;
+			app.entry = Object.assign({}, entry);
+		},
+		deleteEntry: function deleteEntry(id) {
+			if (confirm("Do you really want to delete it?")) {
+				var app = this;
+				app.axios.delete('/api/v1/partnervaluemaps/' + id).then(function (resp) {
+					app.getEntries(app.current_page);
+					console.log("Selected PartnerValueMap deleted.");
+				}).catch(function (resp) {
+					alert("Could not delete Partner.");
+				});
+			}
+		}
+	}
+});
+
+/***/ }),
+/* 117 */,
+/* 118 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_cacheDirectory_true_presets_env_modules_false_targets_browsers_2_uglify_true_plugins_transform_object_rest_spread_transform_runtime_polyfill_false_helpers_false_node_modules_vue_loader_lib_selector_type_script_index_0_CModal_vue__ = __webpack_require__(120);
+/* unused harmony namespace reexport */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_136e7524_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_CModal_vue__ = __webpack_require__(121);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__node_modules_vue_loader_lib_runtime_component_normalizer__ = __webpack_require__(0);
+var disposed = false
+/* script */
+
+
+/* template */
+
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+
+var Component = Object(__WEBPACK_IMPORTED_MODULE_2__node_modules_vue_loader_lib_runtime_component_normalizer__["a" /* default */])(
+  __WEBPACK_IMPORTED_MODULE_0__babel_loader_cacheDirectory_true_presets_env_modules_false_targets_browsers_2_uglify_true_plugins_transform_object_rest_spread_transform_runtime_polyfill_false_helpers_false_node_modules_vue_loader_lib_selector_type_script_index_0_CModal_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_136e7524_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_CModal_vue__["a" /* render */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_136e7524_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_CModal_vue__["b" /* staticRenderFns */],
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources\\assets\\js\\components\\views\\PartnerValueMaps_CRUD\\CModal.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-136e7524", Component.options)
+  } else {
+    hotAPI.reload("data-v-136e7524", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+/* harmony default export */ __webpack_exports__["a"] = (Component.exports);
+
+
+/***/ }),
+/* 119 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_cacheDirectory_true_presets_env_modules_false_targets_browsers_2_uglify_true_plugins_transform_object_rest_spread_transform_runtime_polyfill_false_helpers_false_node_modules_vue_loader_lib_selector_type_script_index_0_EModal_vue__ = __webpack_require__(122);
+/* unused harmony namespace reexport */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_4248b0a8_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_EModal_vue__ = __webpack_require__(123);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__node_modules_vue_loader_lib_runtime_component_normalizer__ = __webpack_require__(0);
+var disposed = false
+/* script */
+
+
+/* template */
+
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+
+var Component = Object(__WEBPACK_IMPORTED_MODULE_2__node_modules_vue_loader_lib_runtime_component_normalizer__["a" /* default */])(
+  __WEBPACK_IMPORTED_MODULE_0__babel_loader_cacheDirectory_true_presets_env_modules_false_targets_browsers_2_uglify_true_plugins_transform_object_rest_spread_transform_runtime_polyfill_false_helpers_false_node_modules_vue_loader_lib_selector_type_script_index_0_EModal_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_4248b0a8_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_EModal_vue__["a" /* render */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_4248b0a8_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_EModal_vue__["b" /* staticRenderFns */],
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources\\assets\\js\\components\\views\\PartnerValueMaps_CRUD\\EModal.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-4248b0a8", Component.options)
+  } else {
+    hotAPI.reload("data-v-4248b0a8", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+/* harmony default export */ __webpack_exports__["a"] = (Component.exports);
+
+
+/***/ }),
+/* 120 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__materials_ModalTemp_vue__ = __webpack_require__(2);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+	props: {
+		show: Boolean
+	},
+	components: {
+		Modal: __WEBPACK_IMPORTED_MODULE_0__materials_ModalTemp_vue__["a" /* default */]
+	},
+	data: function data() {
+		return {
+			entry: {},
+			errors: {}
+		};
+	},
+
+	methods: {
+		close: function close() {
+			var app = this;
+			app.$emit('close');
+			app.entry = {};
+			app.errors = {};
+		},
+		saveEntry: function saveEntry() {
+			var app = this;
+			app.axios.post('/api/v1/partnervaluemaps', app.entry).then(function (resp) {
+				app.$emit('saved');
+				app.close();
+				console.log('new PartnerValueMap created.');
+				console.log(resp.data);
+			}).catch(function (resp) {
+				app.errors = resp.response.data;
+				console.log("error message");
+				console.log(app.errors);
+			});
+		}
+	}
+});
+
+/***/ }),
+/* 121 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("modal", { attrs: { show: _vm.show }, on: { close: _vm.close } }, [
+    _c("div", { staticClass: "modal-header" }, [
+      _c("h3", [_vm._v("New PartnerValueMap")])
+    ]),
+    _vm._v(" "),
+    _c("div", { staticClass: "modal-body" }, [
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", { staticClass: "form-label" }, [_vm._v("name")]),
+        _vm._v(" "),
+        _c("input", {
+          directives: [
+            {
+              name: "model",
+              rawName: "v-model",
+              value: _vm.entry.name,
+              expression: "entry.name"
+            }
+          ],
+          staticClass: "form-control",
+          domProps: { value: _vm.entry.name },
+          on: {
+            input: function($event) {
+              if ($event.target.composing) {
+                return
+              }
+              _vm.$set(_vm.entry, "name", $event.target.value)
+            }
+          }
+        })
+      ]),
+      _vm._v(" "),
+      _c(
+        "div",
+        {
+          staticClass: "form-group",
+          class: { "has-error": _vm.errors.valuemap }
+        },
+        [
+          _c("label", { staticClass: "form-label" }, [_vm._v("valuemap")]),
+          _vm._v(" "),
+          _c("textarea", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model",
+                value: _vm.entry.valuemap,
+                expression: "entry.valuemap"
+              }
+            ],
+            staticClass: "form-control",
+            attrs: { rows: "4", cols: "50" },
+            domProps: { value: _vm.entry.valuemap },
+            on: {
+              input: function($event) {
+                if ($event.target.composing) {
+                  return
+                }
+                _vm.$set(_vm.entry, "valuemap", $event.target.value)
+              }
+            }
+          }),
+          _vm._v(" "),
+          _vm.errors.valuemap
+            ? _c(
+                "div",
+                { staticClass: "help-block" },
+                _vm._l(_vm.errors.valuemap, function(error) {
+                  return _c("span", [_vm._v(_vm._s(error))])
+                })
+              )
+            : _vm._e()
+        ]
+      ),
+      _vm._v(" "),
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", { staticClass: "form-label" }, [_vm._v("description")]),
+        _vm._v(" "),
+        _c("input", {
+          directives: [
+            {
+              name: "model",
+              rawName: "v-model",
+              value: _vm.entry.description,
+              expression: "entry.description"
+            }
+          ],
+          staticClass: "form-control",
+          domProps: { value: _vm.entry.description },
+          on: {
+            input: function($event) {
+              if ($event.target.composing) {
+                return
+              }
+              _vm.$set(_vm.entry, "description", $event.target.value)
+            }
+          }
+        })
+      ])
+    ]),
+    _vm._v(" "),
+    _c("div", { staticClass: "modal-footer text-right" }, [
+      _c(
+        "button",
+        {
+          staticClass: "modal-default-button",
+          on: {
+            click: function($event) {
+              _vm.saveEntry()
+            }
+          }
+        },
+        [_vm._v("\n\t\t\tSave\n\t\t")]
+      )
+    ])
+  ])
+}
+var staticRenderFns = []
+render._withStripped = true
+
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-136e7524", { render: render, staticRenderFns: staticRenderFns })
+  }
+}
+
+/***/ }),
+/* 122 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__materials_ModalTemp_vue__ = __webpack_require__(2);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+	props: {
+		show: Boolean,
+		entry: Object
+	},
+	components: {
+		Modal: __WEBPACK_IMPORTED_MODULE_0__materials_ModalTemp_vue__["a" /* default */]
+	},
+	data: function data() {
+		return {
+			errors: {}
+		};
+	},
+
+	methods: {
+		close: function close() {
+			var app = this;
+			app.errors = {};
+			app.$emit('close');
+		},
+		saveEntry: function saveEntry() {
+			var app = this;
+			app.axios.patch('/api/v1/partnervaluemaps/' + app.entry.id, app.entry).then(function (resp) {
+				app.$emit('saved');
+				app.close();
+				console.log('PartnerValueMap updated');
+				console.log(resp.data);
+			}).catch(function (resp) {
+				app.errors = resp.response.data;
+				console.log("error message");
+				console.log(app.errors);
+			});
+		}
+	}
+});
+
+/***/ }),
+/* 123 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("modal", { attrs: { show: _vm.show }, on: { close: _vm.close } }, [
+    _c("div", { staticClass: "modal-header" }, [
+      _c("h3", [_vm._v("Edit PartnerValueMap")])
+    ]),
+    _vm._v(" "),
+    _c("div", { staticClass: "modal-body" }, [
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", { staticClass: "form-label" }, [_vm._v("name")]),
+        _vm._v(" "),
+        _c("input", {
+          directives: [
+            {
+              name: "model",
+              rawName: "v-model",
+              value: _vm.entry.name,
+              expression: "entry.name"
+            }
+          ],
+          staticClass: "form-control",
+          domProps: { value: _vm.entry.name },
+          on: {
+            input: function($event) {
+              if ($event.target.composing) {
+                return
+              }
+              _vm.$set(_vm.entry, "name", $event.target.value)
+            }
+          }
+        })
+      ]),
+      _vm._v(" "),
+      _c(
+        "div",
+        {
+          staticClass: "form-group",
+          class: { "has-error": _vm.errors.valuemap }
+        },
+        [
+          _c("label", { staticClass: "form-label" }, [_vm._v("valuemap")]),
+          _vm._v(" "),
+          _c("textarea", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model",
+                value: _vm.entry.valuemap,
+                expression: "entry.valuemap"
+              }
+            ],
+            staticClass: "form-control",
+            attrs: { rows: "4", cols: "50" },
+            domProps: { value: _vm.entry.valuemap },
+            on: {
+              input: function($event) {
+                if ($event.target.composing) {
+                  return
+                }
+                _vm.$set(_vm.entry, "valuemap", $event.target.value)
+              }
+            }
+          }),
+          _vm._v(" "),
+          _vm.errors.valuemap
+            ? _c(
+                "div",
+                { staticClass: "help-block" },
+                _vm._l(_vm.errors.valuemap, function(error) {
+                  return _c("span", [_vm._v(_vm._s(error))])
+                })
+              )
+            : _vm._e()
+        ]
+      ),
+      _vm._v(" "),
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", { staticClass: "form-label" }, [_vm._v("description")]),
+        _vm._v(" "),
+        _c("input", {
+          directives: [
+            {
+              name: "model",
+              rawName: "v-model",
+              value: _vm.entry.description,
+              expression: "entry.description"
+            }
+          ],
+          staticClass: "form-control",
+          domProps: { value: _vm.entry.description },
+          on: {
+            input: function($event) {
+              if ($event.target.composing) {
+                return
+              }
+              _vm.$set(_vm.entry, "description", $event.target.value)
+            }
+          }
+        })
+      ])
+    ]),
+    _vm._v(" "),
+    _c("div", { staticClass: "modal-footer text-right" }, [
+      _c(
+        "button",
+        {
+          staticClass: "modal-default-button",
+          on: {
+            click: function($event) {
+              _vm.saveEntry()
+            }
+          }
+        },
+        [_vm._v("\n\t\t\tSave\n\t\t")]
+      )
+    ])
+  ])
+}
+var staticRenderFns = []
+render._withStripped = true
+
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-4248b0a8", { render: render, staticRenderFns: staticRenderFns })
+  }
+}
+
+/***/ }),
+/* 124 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(125);
+if(typeof content === 'string') content = [[module.i, content, '']];
+if(content.locals) module.exports = content.locals;
+// add the styles to the DOM
+var add = __webpack_require__(4).default
+var update = add("0bb73bfd", content, false, {});
+// Hot Module Replacement
+if(false) {
+ // When the styles change, update the <style> tags
+ if(!content.locals) {
+   module.hot.accept("!!../../../../../../node_modules/css-loader/index.js!../../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"optionsId\":\"0\",\"vue\":true,\"id\":\"data-v-99debdc4\",\"scoped\":true,\"sourceMap\":false}!../../../../../../node_modules/sass-loader/lib/loader.js?indentedSyntax!../../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Index.vue", function() {
+     var newContent = require("!!../../../../../../node_modules/css-loader/index.js!../../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"optionsId\":\"0\",\"vue\":true,\"id\":\"data-v-99debdc4\",\"scoped\":true,\"sourceMap\":false}!../../../../../../node_modules/sass-loader/lib/loader.js?indentedSyntax!../../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Index.vue");
+     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+     update(newContent);
+   });
+ }
+ // When the module is disposed, remove the <style> tags
+ module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 125 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(3)(false);
+// imports
+
+
+// module
+exports.push([module.i, "\ntable[data-v-99debdc4] {\n  table-layout: fixed;\n  width: 100%;\n}\ntable td[data-v-99debdc4] {\n  word-wrap: break-word;\n  overflow-wrap: break-word;\n}\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 126 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "div",
+    [
+      _c("c-modal", {
+        attrs: { show: _vm.showCModal },
+        on: {
+          close: function($event) {
+            _vm.showCModal = false
+          },
+          saved: function($event) {
+            _vm.getEntries(_vm.current_page)
+          }
+        }
+      }),
+      _vm._v(" "),
+      _c("e-modal", {
+        attrs: { show: _vm.showEModal, entry: _vm.entry },
+        on: {
+          close: function($event) {
+            _vm.showEModal = false
+          },
+          saved: function($event) {
+            _vm.getEntries(_vm.current_page)
+          }
+        }
+      }),
+      _vm._v(" "),
+      _c("div", { staticClass: "form-group" }, [
+        _c(
+          "button",
+          {
+            staticClass: "btn btn-success",
+            on: {
+              click: function($event) {
+                _vm.showCModal = true
+              }
+            }
+          },
+          [_vm._v("Create")]
+        )
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "panel panel-default" }, [
+        _c("div", { staticClass: "panel-heading" }, [
+          _vm._v("PartnerValueMaps List")
+        ]),
+        _vm._v(" "),
+        _c(
+          "div",
+          { staticClass: "panel-body" },
+          [
+            _c("table", { staticClass: "table table-bordered table-striped" }, [
+              _vm._m(0),
+              _vm._v(" "),
+              _c(
+                "tbody",
+                _vm._l(_vm.entry_list.data, function(entry, index) {
+                  return _c("tr", { key: index }, [
+                    _c("td", [_vm._v(_vm._s(entry.name))]),
+                    _vm._v(" "),
+                    _c("td", [_vm._v(_vm._s(entry.valuemap))]),
+                    _vm._v(" "),
+                    _c("td", [_vm._v(_vm._s(entry.description))]),
+                    _vm._v(" "),
+                    _c("td", [
+                      _c(
+                        "button",
+                        {
+                          staticClass: "btn btn-xs btn-default",
+                          on: {
+                            click: function($event) {
+                              _vm.editEntry(entry)
+                            }
+                          }
+                        },
+                        [_vm._v("Edit")]
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "button",
+                        {
+                          staticClass: "btn btn-xs btn-danger",
+                          on: {
+                            click: function($event) {
+                              _vm.deleteEntry(entry.id)
+                            }
+                          }
+                        },
+                        [_vm._v("Delete")]
+                      )
+                    ])
+                  ])
+                })
+              )
+            ]),
+            _vm._v(" "),
+            _c(
+              "pagination",
+              {
+                attrs: { data: _vm.entry_list },
+                on: { "pagination-change-page": _vm.getEntries }
+              },
+              [
+                _c("span", { attrs: { slot: "prev-nav" }, slot: "prev-nav" }, [
+                  _vm._v("< Previous")
+                ]),
+                _vm._v(" "),
+                _c("span", { attrs: { slot: "next-nav" }, slot: "next-nav" }, [
+                  _vm._v("Next >")
+                ])
+              ]
+            )
+          ],
+          1
+        )
+      ])
+    ],
+    1
+  )
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("thead", [
+      _c("tr", [
+        _c("th", [_vm._v("name")]),
+        _vm._v(" "),
+        _c("th", { attrs: { width: "50%" } }, [_vm._v("valuemap")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("description")]),
+        _vm._v(" "),
+        _c("th", { attrs: { width: "10%" } }, [_vm._v(" ")])
+      ])
+    ])
+  }
+]
+render._withStripped = true
+
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-99debdc4", { render: render, staticRenderFns: staticRenderFns })
   }
 }
 

@@ -6,6 +6,7 @@ import PartnerPicker from '../components/views/PartnerFieldTransforms_CRUD/Partn
 import PartnerFieldTransforms from '../components/views/PartnerFieldTransforms_CRUD/Index.vue'
 import Partner from '../components/views/Partner_CRUD/Index.vue'
 import PartnerFields from '../components/views/PartnerFields_CRUD/Index.vue'
+import PartnerValueMaps from '../components/views/PartnerValueMaps_CRUD/Index.vue'
 
 Vue.use(VueRouter)
 
@@ -43,6 +44,11 @@ export default new VueRouter({
 			name: 'PartnerFields',
 			path: '/partnerfields',
 			component: PartnerFields,
+		},
+		{
+			name: 'PartnerValueMaps',
+			path: '/partnervaluemaps',
+			component: PartnerValueMaps,
 		},
 	]
 })

@@ -23,7 +23,7 @@ class PartnerValueMaps extends Model
      *
      * @var string
      */
-    protected $connection = 'mysql_contacts';
+    // protected $connection = 'mysql_contacts';
 
     /**
      * Mass Assignment
